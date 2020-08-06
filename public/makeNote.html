@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>NoteMaker - Make A Note</title>
+
+  <!-- Latest compiled and minified CSS & JS -->
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <script src="https://code.jquery.com/jquery.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="assets/style.css">
+
+</head>
+
+<body>
+
+  <div class="container">
+
+    <div class="jumbotron">
+      <h1 class="text-center">NoteMaker</h1>
+      <hr>
+      <h2 class="text-center">Make A Note</h2>
+      <br>
+      <div class="text-center">
+        <a href="/viewNotes">
+          <button class="btn btn-lg btn-primary">View notes</button>
+        </a>
+        <a href="/">
+          <button class="btn btn-lg btn-default">
+            <span class="fa fa-home"></span>
+          </button>
+        </a>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12">
+
+        <div class="card">
+          <div class="card-header">
+            Make A Note
+          </div>
+          <div class="card-body">
+            <form role="form">
+              <div class="form-group">
+                <label for="note">Note:</label>
+                <textarea class="form-control" id="note" rows="3"></textarea>
+              </div>
+              
+              <button type="submit" class="btn btn-primary submit">Submit</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <footer class="footer">
+      <div class="container">
+        <p>
+          <a href="/api/notes">API Note Link</a>       
+      </div>
+    </footer>
+
+  </div>
+
+</body>
+
+</html>
+
+<!-- BELOW CODE IS CRITICAL. IT HANDLES HOW FORM DATA IS SENT TO OUR SERVER -->
+<script type="text/javascript">
+  // In this code below we create the Front-end JavaScript which "POSTS" our form data to our express server.
+  // In essence, when the user hits submit, jQuery grabs all of the fields then sends a post request to our api
+  // Our api recognizes the route (/api/notes)... and then runs the associated code (found in api-routes.js).
+  // In this case the associated code "saves" the data to the note-data.js file or waitinglist-data.js file
+  var savedId = [];
+
+  function storeId() {
+
+    localStorage.setItem("savedId", JSON.stringify(savedId));
+
+  }
+
+  $(".submit").on("click", function(event) {
+    event.preventDefault();
+    var storedId = JSON.parse(localStorage.getItem("savedId"));
+    if (storedId != null){
+      savedId = storedId
+    }else if (storedId === null){
+      savedId = [1]
+    }
+    var newId = ++savedId
+    // Here we grab the form elements
+    var newNote = {
+      id: (newId),
+      Note: $("#note").val().trim(),
+      
+    };
+
+    savedId = newId
+    
+    storeId()
+
+    console.log(newNote);
+
+    // This line is the magic. It"s very similar to the standard ajax function we used.
+    // Essentially we give it a URL, we give it the object we want to send, then we have a "callback".
+    // The callback is the response of the server. In our case, we set up code in api-routes that "returns" true or false
+    // depending on if a notes is available or not.
+
+    $.post("/api/notes", newNote,
+      function(data) {
+
+        alert("Note Added!");
+        
+        // Clear the form when submitting
+        $("#note").val("");
+
+      });
+
+  });
+
+</script>

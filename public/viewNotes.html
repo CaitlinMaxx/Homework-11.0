@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>NoteMaker - View Notes</title>
+
+  <!-- Latest compiled and minified CSS & JS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <script src="https://code.jquery.com/jquery.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="assets/style.css">
+
+</head>
+
+<body>
+
+  <div class="container">
+
+    <div class="jumbotron">
+      <h1 class="text-center">NoteMaker</h1>
+      <hr>
+      <h2 class="text-center">Your Notes</h2>
+      <br>
+
+      <div class="text-center">
+        <a href="/makeNote"><button class="btn btn-lg btn-danger">Make A Note</button></a>
+        <a href="/"><button class="btn btn-lg btn-default"><span class="fa fa-home"></span></button></a>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+
+        <div class="card">
+          <div class="card-body">
+            <ul id="noteList" class="list-group"></ul>
+          </div>
+        </div>
+
+        
+      </div>
+    </div>
+
+
+    <footer class="footer mt-4">
+      <div class="container">
+        <a href="/api/notes">API Note Link</a>
+      </div>
+    </footer>
+
+  </div>
+
+</body>
+
+
+<!-- BELOW CODE IS CRITICAL. IT HANDLES HOW FORM DATA IS LOADED FROM OUR SERVER -->
+<script type="text/javascript">
+
+  // In this code, jQuery is used to "download" the data from our server
+  // We then dynamically display this content in our note. This is very similar to the group projects you just completed.
+  // It's also very similar to the NYT search application. In fact, I copied a ton of code from there.
+
+  function runNoteQuery() {
+    // The AJAX function uses the URL of our API to GET the data associated with it (initially set to localhost)
+    $.ajax({ url: "/api/notes", method: "GET" })
+      .then(function(noteData) {
+
+        // Here we then log the noteData to console, where it will show up as an object.
+        console.log(noteData);
+        console.log("------------------------------------");
+
+        // Loop through and display each of the customers
+        for (var i = 0; i < noteData.length; i++) {
+
+          // Get a reference to the noteList element and populate it with notes
+          var noteList = $("#noteList");
+
+          var deleteBtn = $("<button>");
+          deleteBtn.text("Delete")
+          deleteBtn.attr("class", "deletebtn")
+          deleteBtn.attr("id", noteData[i].id)
+
+          // Then display the fields in the HTML (Section Name, Date, URL)
+          var listItem = $("<li class='list-group-item mt-4'>");
+
+          listItem.append(
+            $("<h2>").text("Note #" + (i + 1)),
+            $("<hr>"),
+            $("<p>").text(noteData[i].Note),
+            deleteBtn
+            
+          );
+
+          noteList.append(listItem);
+        }
+      });
+  }    
+    
+  $(".deletebtn").on("click", function(event) {
+    var deleteId = $(this).data("id");
+    var newData = [];
+
+    $.ajax({ url: "/api/notes", method: "GET" })
+      .then(function(noteData) {
+
+        // Here we then log the noteData to console, where it will show up as an object.
+        console.log(noteData);
+        console.log("------------------------------------");
+        var removeIndex = noteData.map(function(note) { return note.id; }).indexOf(deleteId);
+        
+        newData = noteData.splice(removeIndex, 1)
+      });
+
+    // Send the DELETE request.
+    $.ajax({ url:"/api/delete", newData, method: "POST"
+    }).then(
+      function() {
+        console.log("deleted note");
+        // Reload the page to get the updated list
+        location.runNoteQuery();
+      }
+    );
+  });
+
+  runNoteQuery();
+
+
+</script>
+
+</html>
